@@ -65,6 +65,7 @@ function App() {
         setCurrentIndex(currentIndex + 1);
         setColors([...colors, color]);
       } else {
+        window.navigator?.vibrate?.(200);
         setLost(true);
       }
     },
