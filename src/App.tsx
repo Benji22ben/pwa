@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 
 const buttonsColors = [
   {
@@ -19,17 +19,30 @@ const buttonsColors = [
   },
 ];
 
-const victoryColors = ["green", "red", "blue", "yellow"];
-
 function App() {
   const [colors, setColors] = useState<string[]>([]);
   const [currentIndex, setCurrentIndex] = useState<number>(0);
   const [lost, setLost] = useState<boolean>(false);
   const [start, setStart] = useState<boolean>(false);
+  const [victoryColors, setVictoryColors] = useState<string[]>([]);
+
+  const take_random = (arr: string[]) => {
+    return arr[Math.floor(Math.random() * arr.length)];
+  };
+
+  const selectVictoryColors = useCallback(() => {
+    const gameColors = buttonsColors.map((color) => color.name);
+    console.log(take_random(gameColors));
+    console.log(gameColors);
+    for (let i = 0; i < 5; i++) {
+      setVictoryColors([...victoryColors, take_random(gameColors)]);
+    }
+  }, [victoryColors]);
 
   const startingGame = useCallback(() => {
     victoryColors.forEach((color, id) => {
-      const div = document.getElementById(color) as HTMLDivElement;
+      // const div = document.getElementById(color) as HTMLDivElement;
+      const div = useRef<HTMLButtonElement>().current as HTMLButtonElement;
       setTimeout(() => {
         div.style.opacity = "0.5";
         setTimeout(() => {
@@ -40,17 +53,18 @@ function App() {
   }, []);
 
   const startGame = useCallback(() => {
-    console.log("starting");
     setColors([]);
     setCurrentIndex(0);
     setLost(false);
     setStart(true);
+    selectVictoryColors();
+    console.log(victoryColors);
     startingGame();
-  }, [startingGame]);
+  }, [selectVictoryColors, startingGame, victoryColors]);
 
   const currentColor = useMemo(
     () => victoryColors[currentIndex],
-    [currentIndex]
+    [currentIndex, victoryColors]
   );
 
   const resetGame = useCallback(() => {
@@ -72,7 +86,6 @@ function App() {
   );
 
   const victory = useMemo(() => {
-    console.log(colors);
     if (currentIndex === 4) {
       for (let i = 0; i < victoryColors.length; i++) {
         if (colors[i] !== victoryColors[i]) {
@@ -82,15 +95,15 @@ function App() {
       return true;
     }
     return false;
-  }, [colors, currentIndex]);
+  }, [colors, currentIndex, victoryColors]);
 
   return (
     <>
       <div className="w-full h-full absolute grid grid-cols-2 gap-0">
         {buttonsColors.map((buttonColor) => (
           <button
-            id={buttonColor.name}
             key={buttonColor.name}
+            ref={buttonColor.name}
             onClick={() => handleOnClick(buttonColor.name)}
             className={buttonColor.style}
           ></button>
@@ -102,6 +115,9 @@ function App() {
               onClick={startGame}
             >
               Start the game
+            </button>
+            <button className="bg-black text-white text-2xl p-10 rounded">
+              Install the app
             </button>
           </div>
         )}
